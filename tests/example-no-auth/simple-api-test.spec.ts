@@ -52,8 +52,8 @@ test.describe('Get /product/{id}', () => {
     expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
   })
   test('get product with incorrect id with number first should receive code 400', async ({
-                                                                                           request,
-                                                                                         }) => {
+    request,
+  }) => {
     const response = await request.get('https://shop.tl-academy.ee/api/products/1hjkdfsg')
 
     const responseBody = await response.json()
