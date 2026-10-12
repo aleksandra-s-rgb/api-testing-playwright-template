@@ -212,66 +212,69 @@ test.describe('Post /product', () => {
     console.log('response body:', responseBody)
     expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
   })
-  test.fail('post product with incorrect data (with negative price) should receive code 400', async ({
-    request,
-  }) => {
-    // prepare request body
-    const requestBody = {
-      name: 'Peach',
-      category: 'Fruit',
-      price: -9,
-      quantity: 10,
-      available: true,
-    }
-    const response = await request.post('https://shop.tl-academy.ee/api/products', {
-      data: requestBody,
-    })
-    const responseBody = await response.json()
-    const statusCode = response.status()
+  test.fail(
+    'post product with incorrect data (with negative price) should receive code 400',
+    async ({ request }) => {
+      // prepare request body
+      const requestBody = {
+        name: 'Peach',
+        category: 'Fruit',
+        price: -9,
+        quantity: 10,
+        available: true,
+      }
+      const response = await request.post('https://shop.tl-academy.ee/api/products', {
+        data: requestBody,
+      })
+      const responseBody = await response.json()
+      const statusCode = response.status()
 
-    console.log('response status:', statusCode)
-    console.log('response body:', responseBody)
-    expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
-  })
-  test.fail('post product with incorrect data (with no quantity and availability true) should receive code 400', async ({
-    request,
-  }) => {
-    // prepare request body
-    const requestBody = {
-      name: 'Pear',
-      category: 'Fruit',
-      price: 9,
-      available: true,
-    }
-    const response = await request.post('https://shop.tl-academy.ee/api/products', {
-      data: requestBody,
-    })
-    const responseBody = await response.json()
-    const statusCode = response.status()
+      console.log('response status:', statusCode)
+      console.log('response body:', responseBody)
+      expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
+    },
+  )
+  test.fail(
+    'post product with incorrect data (with no quantity and availability true) should receive code 400',
+    async ({ request }) => {
+      // prepare request body
+      const requestBody = {
+        name: 'Pear',
+        category: 'Fruit',
+        price: 9,
+        available: true,
+      }
+      const response = await request.post('https://shop.tl-academy.ee/api/products', {
+        data: requestBody,
+      })
+      const responseBody = await response.json()
+      const statusCode = response.status()
 
-    console.log('response status:', statusCode)
-    console.log('response body:', responseBody)
-    expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
-  })
-  test.fail('post product with incorrect data (with quantity 0 and availability true) should receive code 400', async ({
-    request,
-  }) => {
-    // prepare request body
-    const requestBody = {
-      name: 'Mango',
-      category: 'Fruit',
-      price: 2,
-      quantity: 0,
-      available: true,
-    }
-    const response = await request.post('https://shop.tl-academy.ee/api/products', {
-      data: requestBody,
-    })
-    const responseBody = await response.json()
-    const statusCode = response.status()
+      console.log('response status:', statusCode)
+      console.log('response body:', responseBody)
+      expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
+    },
+  )
+  test.fail(
+    'post product with incorrect data (with quantity 0 and availability true) should receive code 400',
+    async ({ request }) => {
+      // prepare request body
+      const requestBody = {
+        name: 'Mango',
+        category: 'Fruit',
+        price: 2,
+        quantity: 0,
+        available: true,
+      }
+      const response = await request.post('https://shop.tl-academy.ee/api/products', {
+        data: requestBody,
+      })
+      const responseBody = await response.json()
+      const statusCode = response.status()
 
-    console.log('response status:', statusCode)
-    console.log('response body:', responseBody)
-    expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
-  })
+      console.log('response status:', statusCode)
+      console.log('response body:', responseBody)
+      expect(statusCode).toBe(StatusCodes.BAD_REQUEST)
+    },
+  )
 })
