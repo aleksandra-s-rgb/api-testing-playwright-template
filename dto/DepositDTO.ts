@@ -1,14 +1,7 @@
 export class DepositDTO {
-  amount: number
+  amount: number | string
 
-  constructor(amount: number) {
+  constructor(amount: number | string) {
     this.amount = amount
   }
- /* deposit(amount: number): void {
-    if (amount <= 0) {
-      return
-    }
-
-    this.balance = this.balance + amount
-  }*/
 }

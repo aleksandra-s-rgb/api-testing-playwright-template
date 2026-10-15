@@ -185,7 +185,7 @@ test.describe('POST /api/accounts/{id}/deposit', () => {
     expect.soft(response.status(), 'tested status BAD REQUEST').toBe(StatusCodes.BAD_REQUEST)
   })
   test('TL-11-12 POST api/accounts/{id}/deposit with not a number', async ({ request }) => {
-    const amount = new DepositDTO('zero')
+    const amount = new DepositDTO('10')
     const response = await request.post(baseUrl + '/api/accounts/1/deposit', {
       headers: authHeader,
       data: amount,
