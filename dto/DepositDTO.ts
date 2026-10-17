@@ -1,7 +1,7 @@
 export class DepositDTO {
-  amount: number | string
+  amount: number
 
-  constructor(amount: number | string) {
+  constructor(amount: number) {
     this.amount = amount
   }
 }

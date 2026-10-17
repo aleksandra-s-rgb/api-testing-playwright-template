@@ -96,7 +96,21 @@ test.describe('GET /api/accounts', () => {
     const statusCode = response.status()
     expect(statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
-  test('TL-11-6 GET /api/accounts missing X-API-KEY', async ({ request }) => {
+  test('TL-11-6.1 GET /api/accounts missing X-API-KEY', async ({ request }) => {
+    /*const invalidAuthHeader = {
+      'X-API-KEY': '',
+    }*/
+    const response = await request.get(baseUrl + '/api/accounts', {
+      //headers: invalidAuthHeader,
+    })
+    const statusCode = response.status()
+    const respBody: createdAccountErrorResp = await response.json()
+    expect.soft(statusCode).toBe(StatusCodes.UNAUTHORIZED)
+    console.log(respBody)
+    expect.soft(respBody.error).not.toBeUndefined()
+    expect.soft(respBody.error.length).toBeGreaterThan(0)
+  })
+  test('TL-11-6.2 GET /api/accounts empty X-API-KEY', async ({ request }) => {
     const invalidAuthHeader = {
       'X-API-KEY': '',
     }
@@ -114,7 +128,14 @@ test.describe('GET /api/accounts', () => {
 
 test.describe('GET /api/accounts/{id}', () => {
   test('TL-11-7 GET /api/accounts/{id} status code 200 OK', async ({ request }) => {
-    const response = await request.get(baseUrl + '/api/accounts/1', {
+    const account = new AccountDTO('Lina Noor', 'USD')
+    const responseID = await request.post(baseUrl + '/api/accounts', {
+      headers: authHeader,
+      data: account,
+    })
+    const respIDBody: createdAccountResp = await responseID.json()
+    const id = respIDBody.id
+    const response = await request.get(baseUrl + '/api/accounts/' + id, {
       headers: authHeader,
     })
     const responseBody: createdAccountResp = await response.json()
@@ -159,8 +180,15 @@ test.describe('GET /api/accounts/{id}', () => {
 
 test.describe('POST /api/accounts/{id}/deposit', () => {
   test('TL-11-10 POST api/accounts/{id}/deposit with valid data', async ({ request }) => {
-    const amount = new DepositDTO(10)
-    const response = await request.post(baseUrl + '/api/accounts/1/deposit', {
+    const account = new AccountDTO('Marko P', 'EUR')
+    const responseID = await request.post(baseUrl + '/api/accounts', {
+      headers: authHeader,
+      data: account,
+    })
+    const respIDBody: createdAccountResp = await responseID.json()
+    const id = respIDBody.id
+    const amount = new DepositDTO(100)
+    const response = await request.post(baseUrl + '/api/accounts/' + id + '/deposit', {
       headers: authHeader,
       data: amount,
     })
@@ -169,6 +197,8 @@ test.describe('POST /api/accounts/{id}/deposit', () => {
     console.log(response.status())
     console.log(amount)
     console.log(respBody)
+    console.log(respBody.balance)
+    expect.soft(respBody.balance).toBe(respIDBody.balance + respBody.balance)
     expect.soft(response.status(), 'tested status OK').toBe(StatusCodes.OK)
   })
   test('TL-11-11 POST api/accounts/{id}/deposit with invalid data', async ({ request }) => {
@@ -185,8 +215,17 @@ test.describe('POST /api/accounts/{id}/deposit', () => {
     expect.soft(response.status(), 'tested status BAD REQUEST').toBe(StatusCodes.BAD_REQUEST)
   })
   test('TL-11-12 POST api/accounts/{id}/deposit with not a number', async ({ request }) => {
-    const amount = new DepositDTO('10')
-    const response = await request.post(baseUrl + '/api/accounts/1/deposit', {
+    const account = new AccountDTO('Lily C.', 'EUR')
+    const responseID = await request.post(baseUrl + '/api/accounts', {
+      headers: authHeader,
+      data: account,
+    })
+    const respIDBody: createdAccountResp = await responseID.json()
+    const id = respIDBody.id
+    const amount = {
+      amount: '12',
+    }
+    const response = await request.post(baseUrl + '/api/accounts/' + id + '/deposit', {
       headers: authHeader,
       data: amount,
     })
@@ -237,13 +276,50 @@ test.describe('POST /api/accounts/{id}/deposit', () => {
 
   test.describe('POST /api/accounts/{id}/transfer', () => {
     test('TL-11-15 POST api/accounts/{id}/transfer with valid id', async ({ request }) => {
-      const transfer = new TransferDTO(3, 100)
-      const response = await request.post(baseUrl + '/api/accounts/1/transfer', {
+      const account1 = new AccountDTO('Denis O.', 'GBP')
+      const responseID1 = await request.post(baseUrl + '/api/accounts', {
+        headers: authHeader,
+        data: account1,
+      })
+      const respIDBody1: createdAccountResp = await responseID1.json()
+      const id = respIDBody1.id
+      const account2 = new AccountDTO('Luna O.', 'GBP')
+      const responseID2 = await request.post(baseUrl + '/api/accounts', {
+        headers: authHeader,
+        data: account2,
+      })
+      const respIDBody2: createdAccountResp = await responseID2.json()
+      const id2 = respIDBody2.id
+      const amount1 = new DepositDTO(100)
+      const response1 = await request.post(baseUrl + '/api/accounts/' + id + '/deposit', {
+        headers: authHeader,
+        data: amount1,
+      })
+      const respBody1: createdAccountResp = await response1.json()
+      console.log(`Balance of ${respBody1.owner} before transfer was: ${respBody1.balance}`)
+      expect(respBody1.balance).toBe(100)
+      const amount2 = new DepositDTO(50)
+      const response2 = await request.post(baseUrl + '/api/accounts/' + id2 + '/deposit', {
+        headers: authHeader,
+        data: amount2,
+      })
+      const respBody2: createdAccountResp = await response2.json()
+      console.log(`Balance of ${respBody2.owner} before transfer was: ${respBody2.balance}`)
+      expect(respBody2.balance).toBe(50)
+      const transfer = new TransferDTO(id2, 10)
+      const response = await request.post(baseUrl + '/api/accounts/' + id + '/transfer', {
         headers: authHeader,
         data: transfer,
       })
       const respBody: createdAccountResp = await response.json()
+
       console.log(response.status())
+      console.log(`Balance of ${respBody1.owner} after transfer is: ${respBody1.balance}`)
+      console.log(`Balance of ${respBody2.owner} after transfer is: ${respBody2.balance}`)
+      expect(respBody1.balance - 10).toBe(90)
+      expect(respBody2.balance + 10).toBe(60)
+      console.log(respBody1)
+      console.log(respBody2)
       console.log(respBody)
       expect(response.status(), 'tested status 200').toBe(StatusCodes.OK)
     })
@@ -253,18 +329,19 @@ test.describe('POST /api/accounts/{id}/deposit', () => {
       const responseData = await request.get(baseUrl + '/api/accounts/1', {
         headers: authHeader,
       })
-
       const respBodyAccount: createdAccountResp = await responseData.json()
-      expect(responseData.status()).toBe(StatusCodes.OK)
-      const transfer = new TransferDTO(1, respBodyAccount.balance + 1)
+      expect.soft(responseData.status()).toBe(StatusCodes.OK)
+      const transfer = new TransferDTO(3, respBodyAccount.balance + 1)
       const response = await request.post(baseUrl + '/api/accounts/3/transfer', {
         headers: authHeader,
         data: transfer,
       })
       const respBody: createdAccountResp = await response.json()
       console.log(response.status())
+      console.log(transfer)
+      console.log(respBodyAccount)
       console.log(respBody)
-      expect(response.status(), 'tested status CONFLICT').toBe(StatusCodes.CONFLICT)
+      expect.soft(response.status(), 'tested status CONFLICT').toBe(StatusCodes.CONFLICT)
     })
     test.fail('TL-11-17 POST api/accounts/{id}/transfer to the same id', async ({ request }) => {
       const transfer = new TransferDTO(1, 100)
